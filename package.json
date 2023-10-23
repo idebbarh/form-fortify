@@ -1,0 +1,26 @@
+{
+  "name": "@form-fortify/formfortify",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.4.5"
+  },
+  "main": "formFortify.js",
+  "dependencies": {
+    "esbuild": "^0.18.20",
+    "nanoid": "^3.3.6",
+    "picocolors": "^1.0.0",
+    "postcss": "^8.4.31",
+    "rollup": "^3.29.4",
+    "source-map-js": "^1.0.2"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
