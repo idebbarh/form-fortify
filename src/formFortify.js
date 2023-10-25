@@ -1,3 +1,54 @@
+const isDOM = (el) => el instanceof Element;
+const REGISTABLE_ELEMENTS = ["input", "textarea", "select"];
+const VALID_TEXT_ELEMENT_NAMES = [
+  "div",
+  "span",
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "a",
+  "button",
+  "li",
+  "td",
+  "th",
+];
+
+function getParentForm(element) {
+  let currentParent = element.parentElement;
+
+  while (currentParent && currentParent.tagName !== "FORM") {
+    currentParent = currentParent.parentElement;
+  }
+  return currentParent;
+}
+
+function syncErrors(registerStore, registerName) {
+  const errorElementInfo = registerStore.errors[registerName].errorElementInfo;
+  const isError = registerStore.errors[registerName].error;
+
+  if (!errorElementInfo) {
+    return;
+  }
+  if (isError) {
+    errorElementInfo.element.innerText = errorElementInfo.errorMessage;
+  } else {
+    errorElementInfo.element.innerText = "";
+  }
+}
+
+function isValidForm(errors) {
+  for (let value of Object.values(errors)) {
+    if (value.error === true) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function isValideValidator(field, validator) {
   let isValid = true;
   switch (validator[0]) {
@@ -24,15 +75,16 @@ function isValideValidator(field, validator) {
       break;
     default:
       throw Error(
-        `${validator[0]} is not a valid validator name. Please provide a valid one.`,
+        `Error: ${validator[0]} is not a valid validator name. Please provide a valid one.`,
       );
   }
   return isValid;
 }
+
 function validateField(field, validator) {
   if (!isValideValidator(field, validator)) {
     throw Error(
-      `The validation object you provide is not a valid . Please provide a valid one.`,
+      `Error: The validation object you provide is not a valid . Please provide a valid one.`,
     );
   }
 
@@ -64,138 +116,172 @@ function validateField(field, validator) {
   return isValid;
 }
 
-function domElement(name) {
-  //create dom element
-  const element = document.createElement(name);
-  //check if element created
-  if (!element) {
-    throw new Error(
-      "Not able to create a DOM element from the provided name. Please provide a valid tag name.",
+function register(element, registerName, validation = {}) {
+  if (!isDOM(element)) {
+    throw Error(
+      "Error: Register() Expected a DOM element, but received a non-DOM element or an invalid object.",
     );
   }
 
-  //add children to the created element
-  element.setChildren = function (...fields) {
-    for (let field of fields) {
-      this.appendChild(field);
-    }
-    //if the element is form , apply the register function to all the new children
-    if (this.tagName === "FORM") {
-      this.registerRegisteredChildren();
-    }
-    return this;
-  };
-
-  //set attributes to the created element
-  element.setAttrs = function (attrs) {
-    for (let key in attrs) {
-      this.setAttribute(key, attrs[key]);
-    }
-    return this;
-  };
-
-  //register element to form data if the element a valid form field
-  if (["input", "textarea", "select"].includes(element.tagName.toLowerCase())) {
-    element.register = function (registerName, validation = {}) {
-      this.registerCallback = function () {
-        let currentParent = this.parentElement;
-
-        while (currentParent && currentParent.tagName !== "FORM") {
-          currentParent = currentParent.parentElement;
-        }
-
-        if (!currentParent) {
-          throw new Error(
-            "Not able to find a form element for this element. Please add this element inside a form() function before register it.",
-          );
-        }
-
-        let registerStore = currentParent.registerStore;
-
-        if (registerStore.data.hasOwnProperty(registerName)) {
-          throw new Error(
-            "Not able to store this element with the provided name. Please provide a name not exist in the store",
-          );
-        }
-        const syncValue = () => {
-          const validators = Object.keys(validation);
-          registerStore.data[registerName] = this.value;
-          registerStore.errors[registerName] = false;
-
-          for (let validator of validators) {
-            const isValid = validateField(this, [
-              validator,
-              validation[validator],
-            ]);
-
-            if (!isValid) {
-              const validatorMsg = validation[validator];
-              registerStore.errors[registerName] =
-                typeof validatorMsg === "string"
-                  ? {
-                      message: validatorMsg,
-                    }
-                  : true;
-            }
-          }
-        };
-
-        syncValue();
-
-        this.addEventListener("change", syncValue);
-      };
-      return this;
-    };
+  if (!REGISTABLE_ELEMENTS.includes(element.tagName.toLowerCase())) {
+    throw Error(
+      "Error: Register() Expected (input, textarea or select) element, but received a another element.",
+    );
   }
+
+  if (typeof registerName !== "string") {
+    throw Error(
+      "Error: Register() Expected a valid string register name, but received something else.",
+    );
+  }
+
+  let currentParent = getParentForm(element);
+
+  if (!currentParent) {
+    throw new Error(
+      "Error: Not able to find a form element for this element. Please add this element inside a fortified (hint: fortify function) form element before register it.",
+    );
+  }
+
+  let registerStore = currentParent.registerStore;
+
+  if (!registerStore) {
+    throw new Error(
+      "Error: Please add this element inside a fortified (hint: fortify function) form element before register it.",
+    );
+  }
+
+  if (registerStore.data.hasOwnProperty(registerName)) {
+    throw new Error(
+      "Error: Not able to store this element with the provided name. Please provide a name not exist in the store",
+    );
+  }
+
+  const validators = Object.keys(validation);
+  registerStore.data[registerName] = element.value;
+  registerStore.errors[registerName] = { error: false };
+
+  const syncValue = () => {
+    registerStore.data[registerName] = element.value;
+    registerStore.errors[registerName].error = false;
+
+    for (let validator of validators) {
+      const isValid = validateField(element, [
+        validator,
+        validation[validator],
+      ]);
+
+      if (!isValid) {
+        const validatorMsg = validation[validator];
+        registerStore.errors[registerName].error = true;
+        if (typeof validatorMsg === "string") {
+          registerStore.errors[registerName].message = validatorMsg;
+        }
+        if (
+          registerStore.errors[registerName].errorElementInfo &&
+          registerStore.errors[registerName].message
+        ) {
+          registerStore.errors[registerName].errorElementInfo.errorMessage =
+            registerStore.errors[registerName].message;
+        }
+      }
+    }
+  };
+
+  syncValue();
+
+  element.addEventListener("input", () => {
+    syncValue();
+    syncErrors(registerStore, registerName);
+  });
 
   return element;
 }
 
-function input() {
-  const inputElem = domElement("input");
-  return inputElem;
+function registerError(element, registerName) {
+  if (!isDOM(element)) {
+    throw Error(
+      "Error: registerError() Expected a DOM element, but received a non-DOM element or an invalid object.",
+    );
+  }
+
+  if (!VALID_TEXT_ELEMENT_NAMES.includes(element.tagName.toLowerCase())) {
+    throw Error(
+      "Error: registerError() Expected a valid text element to show the error, but received something else.",
+    );
+  }
+
+  let currentParent = getParentForm(element);
+
+  if (!currentParent) {
+    throw new Error(
+      "Error: Not able to find a form element for this element. Please add this element inside a fortified (hint: fortify function) form element before add it to showError function.",
+    );
+  }
+
+  let registerStore = currentParent.registerStore;
+
+  if (!registerStore) {
+    throw new Error(
+      "Error: Please add this element inside a fortified (hint: fortify function) form element before add it to showError function.",
+    );
+  }
+
+  if (!registerStore.errors.hasOwnProperty(registerName)) {
+    throw new Error(
+      "Error: Not able to find an element with the provided register name.",
+    );
+  }
+
+  registerStore.errors[registerName].errorElementInfo = {
+    errorMessage:
+      registerStore.errors[registerName].message ?? element.innerText,
+    element,
+  };
+
+  syncErrors(registerStore, registerName);
 }
 
-function form() {
-  const formElement = domElement("form");
+function fortify(formElement, submitCallback) {
+  if (!isDOM(formElement)) {
+    throw Error(
+      "Error: Fortify() Expected a DOM element, but received a non-DOM element or an invalid object.",
+    );
+  }
+
+  if (formElement.tagName !== "FORM") {
+    throw Error(
+      "Error: Fortify() Expected a form element, but received a non-form element.",
+    );
+  }
+
+  if (typeof submitCallback !== "function") {
+    throw Error(
+      "Error: Fortify() Expected a function, but received something else.",
+    );
+  }
 
   formElement.registerStore = { errors: {}, data: {} };
 
-  formElement.addSubmitHandler = function (submitCallback) {
-    this.addEventListener("submit", (e) => {
-      e.preventDefault();
-      submitCallback(this.registerStore);
-    });
-    return this;
-  };
-
-  formElement.registerRegisteredChildren = function () {
-    for (let element of formElement.elements) {
-      if (!element.hasOwnProperty("registerCallback")) {
-        continue;
-      }
-      element.registerCallback();
+  formElement.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!isValidForm(this.registerStore.errors)) {
+      return;
     }
-  };
-
-  return formElement;
+    submitCallback(this.registerStore.data);
+  });
 }
 
 function submitHandler(data) {
   console.log(data);
 }
 
-document.getElementById("app").appendChild(
-  form()
-    .setAttrs({ class: "form" })
-    .setChildren(
-      input()
-        .setAttrs({ type: "text", name: "fullname" })
-        .register("fullname", { custom: (value) => value === "ismail" }),
-      input()
-        .setAttrs({ type: "number", name: "age" })
-        .register("age", { min: 5 }),
-      input().setAttrs({ type: "submit" }),
-    )
-    .addSubmitHandler(submitHandler),
-);
+const formElement = document.getElementsByClassName("form-container");
+const inputf = document.getElementsByClassName("input-fname");
+const inputl = document.getElementsByClassName("input-lname");
+const inputfErrorMsg = document.getElementsByClassName("input-fname-error-msg");
+
+fortify(formElement[0], submitHandler);
+register(inputf[0], "fname", { require: true });
+register(inputl[0], "lname", { require: "last name is required" });
+registerError(inputfErrorMsg[0], "fname");
