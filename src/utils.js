@@ -1,5 +1,5 @@
 export function isDOM(element) {
-  return element instanceof Element;
+  return element instanceof HTMLElement;
 }
 
 export function getParentForm(element) {
