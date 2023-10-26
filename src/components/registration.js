@@ -46,6 +46,8 @@ export function register(element, registerName, validation = {}) {
 
   const validators = Object.keys(validation);
 
+  registerStore.errors[registerName] = { error: false };
+
   syncValue(element, registerStore, registerName, validators, validation);
 
   element.addEventListener("input", () => {
@@ -90,14 +92,12 @@ export function registerError(element, registerName) {
       "Error: Not able to find an element with the provided register name.",
     );
   }
-
   registerStore.errors[registerName].errorElementInfo = {
-    errorMessage:
-      registerStore.errors[registerName].message ?? element.innerText,
+    elementInnerText: element.innerText,
     element,
   };
 
-  syncErrors(registerStore, registerName);
+  element.innerText = "";
 }
 
 export function fortify(formElement, submitCallback) {
@@ -123,6 +123,11 @@ export function fortify(formElement, submitCallback) {
 
   formElement.addEventListener("submit", function (e) {
     e.preventDefault();
+
+    Object.keys(this.registerStore.errors).forEach((registerName) => {
+      syncErrors(this.registerStore, registerName);
+    });
+
     if (!isValidForm(this.registerStore.errors)) {
       return;
     }

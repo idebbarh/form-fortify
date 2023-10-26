@@ -11,8 +11,7 @@ export function isValideValidator(field, validator) {
   let isValid = true;
   switch (validator[0]) {
     case "require":
-      isValid =
-        typeof validator[1] === "string" || typeof validator[1] === "boolean";
+      isValid = typeof validator[1] === "boolean";
       break;
     case "maxLength":
       isValid = typeof validator[1] === "number";
