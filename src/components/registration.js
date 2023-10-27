@@ -38,7 +38,10 @@ export function register(element, registerName, validation = {}) {
     );
   }
 
-  if (registerStore.data.hasOwnProperty(registerName)) {
+  if (
+    registerStore.data.hasOwnProperty(registerName) &&
+    element.type !== "radio"
+  ) {
     throw new Error(
       "Error: Not able to store this element with the provided name. Please provide a name not exist in the store",
     );

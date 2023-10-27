@@ -8,4 +8,7 @@ const myForm = document.getElementById("myForm");
 
 for (let i = 0; i < myForm.elements.length; i++) {
   const element = myForm.elements[i];
+  if (element.type === "radio") {
+    console.log(element.checked);
+  }
 }

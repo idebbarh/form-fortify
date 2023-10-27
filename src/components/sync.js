@@ -1,12 +1,5 @@
 import { validateField } from "./validation";
 
-const uniqueInputTypeHandlers = {
-  checkbox: (element, registerName) =>
-    (registerStore.data[registerName] = element.checked),
-  file: (element, registerName) =>
-    (registerStore.data[registerName] = element.files[0]),
-};
-
 export function syncValue(
   element,
   registerStore,
@@ -15,13 +8,20 @@ export function syncValue(
   validation,
 ) {
   const elementType = element.type;
+
+  const uniqueInputTypeHandlers = {
+    checkbox: () => (registerStore.data[registerName] = element.checked),
+    file: () => (registerStore.data[registerName] = element.files[0]),
+    radio: () =>
+      (registerStore.data[registerName] = element.checked ? element.value : ""),
+  };
+
   if (uniqueInputTypeHandlers[elementType]) {
-    uniqueInputTypeHandlers[elementType](element, registerName);
+    uniqueInputTypeHandlers[elementType]();
   } else if (
     [
       "text",
       "password",
-      "radio",
       "number",
       "range",
       "color",
