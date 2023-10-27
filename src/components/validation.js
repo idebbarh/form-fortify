@@ -1,42 +1,45 @@
-const validateFieldHandler = {
-  require: (fieldValue, validatorValue) =>
-    !validatorValue || fieldValue.length > 0,
-  maxLength: (fieldValue, validatorValue) =>
-    fieldValue.length <= validatorValue,
-  minLength: (fieldValue, validatorValue) =>
-    fieldValue.length >= validatorValue,
-  max: (fieldValue, validatorValue) => parseFloat(fieldValue) <= validatorValue,
-  min: (fieldValue, validatorValue) => parseFloat(fieldValue) >= validatorValue,
-  custom: (field, validatorValue) => validatorValue(field),
-};
+export function isValidForm(errors) {
+  return Object.values(errors).some((value) => value.error);
+}
 
 const validateValidatorHandler = {
   require: (_, validatorValue) => typeof validatorValue === "boolean",
-  maxLength: (_, validatorValue) => typeof validatorValue === "number",
-  minLength: (_, validatorValue) => typeof validatorValue === "number",
+  maxLength: (_, validatorValue) =>
+    typeof validatorValue === "number" && validatorValue >= 0,
+  minLength: (_, validatorValue) =>
+    typeof validatorValue === "number" && validatorValue >= 0,
   max: (field, validatorValue) =>
     typeof validatorValue === "number" &&
+    validatorValue >= 0 &&
     ["number", "range"].includes(field.type),
   max: (field, validatorValue) =>
     typeof validatorValue === "number" &&
+    validatorValue >= 0 &&
     ["number", "range"].includes(field.type),
   custom: (field, validatorValue) =>
     typeof validatorValue === "function" &&
     typeof validatorValue(field.value) === "boolean",
 };
 
-export function isValidForm(errors) {
-  return Object.values(errors).some((value) => value.error);
-}
+const validateFieldHandler = {
+  require: (fieldValue, validatorValue) => !validatorValue || fieldValue,
+  maxLength: (fieldValue, validatorValue) =>
+    fieldValue.length <= validatorValue,
+  minLength: (fieldValue, validatorValue) =>
+    fieldValue.length >= validatorValue,
+  max: (fieldValue, validatorValue) =>
+    fieldValue.length && parseFloat(fieldValue) <= validatorValue,
+  min: (fieldValue, validatorValue) =>
+    fieldValue.length && parseFloat(fieldValue) >= validatorValue,
+  custom: (field, validatorValue) => validatorValue(field),
+};
 
 export function validateField(field, validator) {
   const validatorType = validator[0];
   const validatorValue = validator[1];
 
   if (!validateValidatorHandler.hasOwnProperty(validatorType)) {
-    throw Error(
-      `Error: ${validatorType.toUpperCase()} is not a valid validator type.`,
-    );
+    throw Error(`Error: ${validatorType} is not a valid validator type.`);
   }
 
   const validateValidatorFunction = validateValidatorHandler[validatorType];
@@ -47,5 +50,5 @@ export function validateField(field, validator) {
 
   const validateFieldFunction = validateFieldHandler[validator[0]];
 
-  return validateFieldFunction(field.value, validator[1]);
+  return validateFieldFunction(field.value.trim(), validator[1]);
 }

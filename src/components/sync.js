@@ -23,6 +23,7 @@ export function syncValue(
       "password",
       "radio",
       "number",
+      "range",
       "color",
       "select-one",
       "textarea",
