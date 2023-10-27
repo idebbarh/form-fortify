@@ -4,12 +4,8 @@ function submitHandler(data) {
   console.log(data);
 }
 
-const formElement = document.getElementById("form-element");
-const fnameInput = document.querySelector(".input-fname");
-const lnameInput = document.querySelector(".input-lname");
-const fnameError = document.querySelector(".input-fname-error-msg");
+const myForm = document.getElementById("myForm");
 
-fortify(formElement, submitHandler);
-register(fnameInput, "fname", { maxLength: 10, require: true });
-register(lnameInput, "lname");
-registerError(fnameError, "fname");
+for (let i = 0; i < myForm.elements.length; i++) {
+  const element = myForm.elements[i];
+}

@@ -7,17 +7,22 @@
   </head>
   <body>
     <div id="app">
-      <form id="form-element">
-        <label for="fname">First name:</label><br />
-        <input type="text" id="fname" name="fname" class="input-fname" /><br />
-        <p class="input-fname-error-msg">
-          please provide a value between 1 and 10
-        </p>
-        <label for="lname">Last name:</label><br />
-        <input type="text" id="lname" name="lname" class="input-lname" />
-        <button>submit</button>
+      <form id="myForm">
+        <input type="text" name="textValue" value="Default Text" />
+        <input type="password" name="passwordValue" value="secretpassword" />
+        <input type="radio" name="radioValue" value="Option1" />
+        <input type="radio" name="radioValue" value="Option2" />
+        <input type="checkbox" name="checkboxValue" checked />
+        <input type="file" name="fileValue" />
+        <input type="number" name="numberValue" value="42" />
+        <input type="color" name="colorValue" value="#FF0000" />
+        <select name="selectValue">
+          <option value="OptionA">Option A</option>
+          <option value="OptionB">Option B</option>
+        </select>
+        <textarea name="textareaValue">Default Textarea</textarea>
       </form>
     </div>
-    <script defer type="module" src="./examples/main.js"></script>
+    <script defer type="module" src="./main.js"></script>
   </body>
 </html>
