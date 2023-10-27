@@ -5,6 +5,7 @@ function submitHandler(data) {
 }
 
 const myForm = document.getElementById("myForm");
+const errorElements = document.querySelectorAll(".error-msg");
 
 fortify(myForm, submitHandler);
 
@@ -15,5 +16,15 @@ for (let i = 0; i < myForm.elements.length; i++) {
   }
 
   const registerName = element.name;
-  register(element, registerName, { require: true });
+  if (registerName) {
+    register(element, registerName, { require: true });
+  }
+}
+
+for (let i = 0; i < errorElements.length; i++) {
+  const element = errorElements[i];
+  const registerName = element.previousElementSibling.name;
+  if (registerName) {
+    registerError(element, registerName);
+  }
 }

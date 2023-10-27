@@ -9,18 +9,27 @@
     <div id="app">
       <form id="myForm">
         <input type="text" name="textValue" value="Default Text" />
+        <p class="error-msg">text field is required</p>
         <input type="password" name="passwordValue" value="secretpassword" />
+        <p class="error-msg">password is required</p>
         <input type="radio" name="radioValue" value="Option1" />
         <input type="radio" name="radioValue" value="Option2" checked />
+        <p class="error-msg">radio is required</p>
         <input type="checkbox" name="checkboxValue" />
+        <p class="error-msg">checkbox is required</p>
         <input type="file" name="fileValue" />
+        <p class="error-msg">file is required</p>
         <input type="number" name="numberValue" value="42" />
+        <p class="error-msg">number is required</p>
         <input type="color" name="colorValue" value="#FF0000" />
+        <p class="error-msg">color is required</p>
         <select name="selectValue">
           <option value="OptionA">Option A</option>
           <option value="OptionB">Option B</option>
         </select>
+        <p class="error-msg">option is required</p>
         <textarea name="textareaValue">Default Textarea</textarea>
+        <p class="error-msg">textarea is required</p>
         <input type="submit" />
       </form>
     </div>
