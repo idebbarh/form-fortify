@@ -6,9 +6,14 @@ function submitHandler(data) {
 
 const myForm = document.getElementById("myForm");
 
+fortify(myForm, submitHandler);
+
 for (let i = 0; i < myForm.elements.length; i++) {
   const element = myForm.elements[i];
-  if (element.type === "radio") {
-    console.log(element.checked);
+  if (element.type === "submit") {
+    continue;
   }
+
+  const registerName = element.name;
+  register(element, registerName, { require: true });
 }

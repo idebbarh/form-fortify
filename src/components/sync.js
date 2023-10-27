@@ -11,9 +11,16 @@ export function syncValue(
 
   const uniqueInputTypeHandlers = {
     checkbox: () => (registerStore.data[registerName] = element.checked),
-    file: () => (registerStore.data[registerName] = element.files[0]),
-    radio: () =>
-      (registerStore.data[registerName] = element.checked ? element.value : ""),
+    file: () =>
+      (registerStore.data[registerName] =
+        element.files.length > 0 ? element.files[0] : null),
+    radio: () => {
+      if (element.checked) {
+        registerStore.data[registerName] = element.value;
+      } else if (registerStore.data[registerName] === undefined) {
+        registerStore.data[registerName] = "";
+      }
+    },
   };
 
   if (uniqueInputTypeHandlers[elementType]) {
@@ -34,8 +41,14 @@ export function syncValue(
     throw Error("Error: Unknown field type");
   }
 
+  registerStore.errors[registerName].error = false;
+
   for (let validator of validators) {
-    const isValid = validateField(element, [validator, validation[validator]]);
+    const isValid = validateField(
+      registerStore.data[registerName],
+      element.type,
+      [validator, validation[validator]],
+    );
 
     if (!isValid) {
       registerStore.errors[registerName].error = true;
