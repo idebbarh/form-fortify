@@ -1,5 +1,9 @@
 import { describe, expect, test } from "@jest/globals";
-import { fortify, register } from "../src/components/registration";
+import {
+  fortify,
+  register,
+  registerError,
+} from "../src/components/registration";
 
 describe("form registeration", () => {
   test("give non-DOM element to throw error", () => {
@@ -125,5 +129,96 @@ describe("field registeration", () => {
         "Error: Not able to store this element with the provided name. Please provide a name not exist in the store",
       ),
     );
+  });
+});
+
+describe("error registration", () => {
+  test("give non-DOM element to throw error", () => {
+    expect(() => registerError("text", "registerName")).toThrowError(
+      new Error(
+        "Error: registerError() Expected a DOM element, but received a non-DOM element or an invalid object.",
+      ),
+    );
+  });
+
+  test("give non-valid text element to throw error", () => {
+    const inputElement = document.createElement("input");
+    expect(() => registerError(inputElement, "registerName")).toThrowError(
+      new Error(
+        "Error: registerError() Expected a valid text element to show the error, but received something else.",
+      ),
+    );
+  });
+
+  test("give text element not in form to throw error", () => {
+    const paragraphElement = document.createElement("p");
+    expect(() => registerError(paragraphElement, "registerName")).toThrowError(
+      new Error(
+        "Error: Not able to find a form element for this element. Please add this element inside a fortified (hint: fortify function) form element before add it to showError function.",
+      ),
+    );
+  });
+
+  test("give text element not in fortified form to throw error", () => {
+    const paragraphElement = document.createElement("p");
+    const formElement = document.createElement("form");
+    formElement.appendChild(paragraphElement);
+
+    expect(() => registerError(paragraphElement, "registerName")).toThrowError(
+      new Error(
+        "Error: Please add this element inside a fortified (hint: fortify function) form element before add it to showError function.",
+      ),
+    );
+  });
+
+  test("register text element with unavailable input register name", () => {
+    const paragraphElement = document.createElement("p");
+    const formElement = document.createElement("form");
+    fortify(formElement, () => {});
+    formElement.appendChild(paragraphElement);
+    expect(() => registerError(paragraphElement, "registerName")).toThrowError(
+      new Error(
+        "Error: Not able to find an element with the provided register name.",
+      ),
+    );
+  });
+
+  test("give text element and valid register name to register text element in registerStore", () => {
+    const paragraphElement = document.createElement("p");
+    const formElement = document.createElement("form");
+    const inputElement = document.createElement("input");
+    const errorMessage = "this field is required";
+    const registerName = "registerName";
+    const inputDefaultValue = "default value";
+
+    paragraphElement.innerText = errorMessage;
+
+    const expectedRegisterStore = {
+      errors: {
+        [registerName]: {
+          error: false,
+          errorElementInfo: {
+            elementInnerText: paragraphElement.innerText,
+            element: paragraphElement,
+          },
+        },
+      },
+      data: {
+        [registerName]: inputDefaultValue,
+      },
+    };
+
+    inputElement.type = "text";
+    inputElement.value = inputDefaultValue;
+
+    formElement.appendChild(inputElement);
+    formElement.appendChild(paragraphElement);
+
+    fortify(formElement, () => {});
+    register(inputElement, registerName);
+    registerError(paragraphElement, registerName);
+
+    expect(formElement.registerStore).toEqual(expectedRegisterStore);
+    expect(paragraphElement.innerText).toEqual("");
   });
 });
