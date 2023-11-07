@@ -132,7 +132,6 @@ export function fortify(formElement, submitCallback) {
     });
 
     if (!isValidForm(this.registerStore.errors)) {
-      console.log(this.registerStore.errors);
       return;
     }
     submitCallback(this.registerStore.data);

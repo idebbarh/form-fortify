@@ -16,6 +16,7 @@ for (let i = 0; i < myForm.elements.length; i++) {
   }
 
   const registerName = element.name;
+
   if (registerName) {
     register(element, registerName, { require: true });
   }
