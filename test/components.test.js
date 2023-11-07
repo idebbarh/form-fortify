@@ -221,4 +221,79 @@ describe("error registration", () => {
     expect(formElement.registerStore).toEqual(expectedRegisterStore);
     expect(paragraphElement.innerText).toEqual("");
   });
+
+  test("give valid field type with default value to add it in the store", () => {
+    const formElement = document.createElement("form");
+    const expectedRegisterStore = { errors: {}, data: {} };
+    const typesAndValues = {
+      text: "Sample text",
+      password: "P@ssw0rd",
+      number: 0,
+      range: 50,
+      color: "#000000",
+      email: "example@example.com",
+      date: "2023-01-01",
+      "datetime-local": "2023-01-01T00:00",
+      time: "00:00",
+      month: "2023-01",
+      week: "2023-W01",
+      search: "Search term",
+      tel: "123-456-7890",
+      url: "https://www.example.com",
+    };
+
+    fortify(formElement, () => {});
+
+    Object.entries(typesAndValues).forEach(([type, defaultValue]) => {
+      const inputElement = document.createElement("input");
+      expectedRegisterStore.errors[type] = { error: false };
+      expectedRegisterStore.data[type] = defaultValue.toString();
+
+      inputElement.type = type;
+      inputElement.value = defaultValue.toString();
+      formElement.appendChild(inputElement);
+
+      register(inputElement, type);
+    });
+
+    // Additional types: radio
+    const radioElement = document.createElement("input");
+    const radioDefaultValue = "option1";
+
+    expectedRegisterStore.errors.radio = { error: false };
+    expectedRegisterStore.data.radio = radioDefaultValue;
+
+    radioElement.type = "radio";
+    radioElement.value = radioDefaultValue;
+    radioElement.checked = true;
+
+    formElement.appendChild(radioElement);
+    register(radioElement, "radio");
+
+    //checkbox
+    const checkboxElement = document.createElement("input");
+
+    expectedRegisterStore.errors.checkbox = { error: false };
+    expectedRegisterStore.data.checkbox = false;
+
+    checkboxElement.type = "checkbox";
+    checkboxElement.checked = false;
+
+    formElement.appendChild(checkboxElement);
+    register(checkboxElement, "checkbox");
+
+    //textarea
+    const textareaElement = document.createElement("textarea");
+    const textareaDefaultValue = "Some default text in textarea";
+
+    expectedRegisterStore.errors.textarea = { error: false };
+    expectedRegisterStore.data.textarea = textareaDefaultValue;
+
+    textareaElement.value = textareaDefaultValue;
+
+    formElement.appendChild(textareaElement);
+    register(textareaElement, "textarea");
+
+    expect(formElement.registerStore).toEqual(expectedRegisterStore);
+  });
 });

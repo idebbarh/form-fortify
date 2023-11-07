@@ -34,6 +34,15 @@ export function syncValue(
       "color",
       "select-one",
       "textarea",
+      "email",
+      "date",
+      "datetime-local",
+      "time",
+      "month",
+      "week",
+      "search",
+      "tel",
+      "url",
     ].includes(elementType)
   ) {
     registerStore.data[registerName] = element.value;

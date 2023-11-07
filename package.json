@@ -3,6 +3,9 @@
   "private": false,
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
   "transform": {
     "^.+\\.js$": "babel-jest"
   },
